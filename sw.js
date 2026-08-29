@@ -1,12 +1,22 @@
-const CACHE_NAME = "safety-nav-v3";
+const CACHE_NAME = "safety-nav-v6";
 const APP_SHELL = [
   "./", "./index.html", "./styles.css", "./src/app.js", "./src/safety.js",
-  "./src/map-adapter.js", "./manifest.webmanifest"
+  "./src/map-adapter.js", "./manifest.webmanifest", "./assets/app-icon.png"
 ];
-self.addEventListener("install", (event) => event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL))));
-self.addEventListener("activate", (event) => event.waitUntil(
-  caches.keys().then((keys) => Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))))
-));
+self.addEventListener("install", (event) => event.waitUntil((async () => {
+  const cache = await caches.open(CACHE_NAME);
+  await Promise.all(APP_SHELL.map(async (url) => {
+    const response = await fetch(new Request(url, { cache: "reload" }));
+    if (!response.ok) throw new Error(`App shellの取得に失敗しました: ${url}`);
+    await cache.put(url, response);
+  }));
+  await self.skipWaiting();
+})()));
+self.addEventListener("activate", (event) => event.waitUntil((async () => {
+  const keys = await caches.keys();
+  await Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key)));
+  await self.clients.claim();
+})()));
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
   event.respondWith((async () => {

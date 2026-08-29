@@ -6,14 +6,19 @@
     <meta name="theme-color" content="#0b6bcb" />
     <meta name="description" content="緊急車両の接近を安全に知らせる実証用MVP" />
     <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" type="image/png" sizes="1254x1254" href="assets/app-icon.png" />
+    <link rel="apple-touch-icon" href="assets/app-icon.png" />
     <link rel="stylesheet" href="styles.css" />
     <title>緊急車両セーフティナビ</title>
   </head>
   <body>
     <header class="topbar">
-      <div>
-        <p class="eyebrow">SAFETY ASSIST / 実証用</p>
-        <h1>緊急車両セーフティナビ</h1>
+      <div class="header-brand">
+        <img class="app-logo" src="assets/app-icon.png" alt="" width="58" height="58" />
+        <div>
+          <p class="eyebrow">SAFETY ASSIST / 実証用</p>
+          <h1>緊急車両セーフティナビ</h1>
+        </div>
       </div>
       <span id="connectionBadge" class="badge">模擬データ</span>
     </header>

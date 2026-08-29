@@ -15,6 +15,8 @@
 body { margin: 0; min-height: 100vh; background: radial-gradient(circle at top, #123358 0, var(--bg) 40%); color: var(--text); }
 .topbar, main, footer { width: min(100% - 32px, 980px); margin-inline: auto; }
 .topbar { display: flex; justify-content: space-between; align-items: center; padding: 28px 0 18px; gap: 16px; }
+.header-brand { display: flex; align-items: center; gap: 13px; min-width: 0; }
+.app-logo { width: 58px; height: 58px; flex: 0 0 auto; border-radius: 16px; box-shadow: 0 8px 24px #0007; object-fit: cover; }
 h1, h2, p { margin-top: 0; }
 h1 { margin-bottom: 0; font-size: clamp(1.3rem, 4vw, 2rem); }
 .eyebrow, .alert-kicker { color: var(--blue); font-size: .72rem; font-weight: 800; letter-spacing: .14em; margin-bottom: 5px; }
@@ -70,6 +72,7 @@ footer { color: #7f91a8; font-size: .78rem; text-align: center; line-height: 1.6
 @media (max-width: 650px) {
   .topbar, main, footer { width: min(100% - 20px, 980px); }
   .topbar { align-items: flex-start; }
+  .app-logo { width: 48px; height: 48px; border-radius: 13px; }
   .alert-panel { padding: 16px; gap: 12px; }
   .direction-icon { min-width: 48px; height: 48px; border-radius: 14px; }
   .map-card { height: 360px; }

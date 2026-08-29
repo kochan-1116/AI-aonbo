@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b6bcb" />
+    <meta name="description" content="緊急車両の接近を安全に知らせる実証用MVP" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="stylesheet" href="styles.css" />
+    <title>緊急車両セーフティナビ</title>
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">SAFETY ASSIST / 実証用</p>
+        <h1>緊急車両セーフティナビ</h1>
+      </div>
+      <span id="connectionBadge" class="badge">模擬データ</span>
+    </header>
+
+    <main>
+      <section id="alertPanel" class="alert-panel safe" aria-live="assertive">
+        <div id="directionIcon" class="direction-icon" aria-hidden="true">✓</div>
+        <div>
+          <p id="alertKicker" class="alert-kicker">周辺状況</p>
+          <h2 id="alertTitle">緊急車両の接近情報はありません</h2>
+          <p id="alertDetail">サイレンと周囲の目視確認を常に優先してください</p>
+        </div>
+      </section>
+
+      <section class="map-card" aria-label="現在地周辺の地図">
+        <div id="map" class="map" role="img" aria-label="現在地と緊急車両の位置関係">
+          <div class="fallback-map">
+            <div class="road road-horizontal"></div>
+            <div class="road road-vertical"></div>
+            <div class="radius-ring"></div>
+            <div id="fallbackEmergency" class="vehicle emergency">救</div>
+            <div class="vehicle driver">自</div>
+          </div>
+        </div>
+        <div class="map-overlay">
+          <strong id="distanceText">計測中</strong>
+          <span id="freshnessText">位置情報を確認しています</span>
+        </div>
+      </section>
+
+      <section class="status-grid">
+        <article>
+          <span>検知範囲</span>
+          <strong>最大 500 m</strong>
+        </article>
+        <article>
+          <span>データ保持</span>
+          <strong>端末内のみ</strong>
+        </article>
+        <article>
+          <span>目的地情報</span>
+          <strong>取得しない</strong>
+        </article>
+      </section>
+
+      <section class="controls">
+        <div>
+          <h2>実証コントロール</h2>
+          <p>停車中に操作してください。緊急車両を模擬して安全判定を確認できます。</p>
+        </div>
+        <label class="switch-row">
+          <span>走行モード</span>
+          <input id="drivingMode" type="checkbox" />
+          <span class="switch" aria-hidden="true"></span>
+        </label>
+        <div id="demoControls" class="button-row">
+          <button data-scenario="approach">接近を再現</button>
+          <button data-scenario="away" class="secondary">遠ざかる車両</button>
+          <button data-scenario="stale" class="secondary">通信遅延</button>
+        </div>
+      </section>
+
+      <section class="hazards">
+        <div>
+          <p class="eyebrow">OPEN DATA LAYER</p>
+          <h2>事故注意地点</h2>
+        </div>
+        <p>警察庁オープンデータを取り込むための表示領域です。件数だけで危険と断定せず、期間と根拠を併記します。</p>
+        <div class="hazard-item">
+          <span class="hazard-dot"></span>
+          <div><strong>サンプル交差点</strong><small>デモデータ / 実事故データではありません</small></div>
+        </div>
+      </section>
+    </main>
+
+    <footer>このアプリは安全確認を補助する試作品です。警告の有無にかかわらず、交通法規・サイレン・目視確認を優先してください。</footer>
+    <script src="config.js" onerror="this.remove()"></script>
+    <script type="module" src="src/app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,79 @@
+:root {
+  color-scheme: dark;
+  font-family: Inter, "Noto Sans JP", system-ui, sans-serif;
+  --bg: #07111f;
+  --surface: #0d1b2d;
+  --line: #223650;
+  --text: #f4f8ff;
+  --muted: #9eb0c7;
+  --blue: #38a4ff;
+  --safe: #32d49a;
+  --warn: #ffb020;
+  --danger: #ff5a67;
+}
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; background: radial-gradient(circle at top, #123358 0, var(--bg) 40%); color: var(--text); }
+.topbar, main, footer { width: min(100% - 32px, 980px); margin-inline: auto; }
+.topbar { display: flex; justify-content: space-between; align-items: center; padding: 28px 0 18px; gap: 16px; }
+h1, h2, p { margin-top: 0; }
+h1 { margin-bottom: 0; font-size: clamp(1.3rem, 4vw, 2rem); }
+.eyebrow, .alert-kicker { color: var(--blue); font-size: .72rem; font-weight: 800; letter-spacing: .14em; margin-bottom: 5px; }
+.badge { border: 1px solid #346188; background: #102c47; border-radius: 999px; padding: 7px 11px; color: #bce0ff; font-size: .78rem; white-space: nowrap; }
+main { display: grid; gap: 16px; }
+.alert-panel, .map-card, .controls, .hazards, .status-grid article { border: 1px solid var(--line); background: rgba(13, 27, 45, .94); box-shadow: 0 18px 50px #0005; }
+.alert-panel { border-radius: 20px; padding: 22px; display: flex; gap: 18px; align-items: center; }
+.alert-panel h2 { margin-bottom: 5px; font-size: clamp(1.1rem, 3vw, 1.55rem); }
+.alert-panel p:last-child { color: var(--muted); margin-bottom: 0; }
+.direction-icon { display: grid; place-items: center; min-width: 58px; height: 58px; border-radius: 18px; font-size: 1.7rem; font-weight: 900; background: #153b38; color: var(--safe); }
+.alert-panel.warning { border-color: #8b631f; }
+.alert-panel.warning .direction-icon { background: #4d3511; color: var(--warn); }
+.alert-panel.critical { border-color: #a13742; animation: pulse 1.2s ease-in-out infinite alternate; }
+.alert-panel.critical .direction-icon { background: #4f1c24; color: var(--danger); }
+.alert-panel.unavailable .direction-icon { background: #29384a; color: #c0cad8; }
+@keyframes pulse { to { box-shadow: 0 0 0 3px #ff5a6733, 0 18px 50px #0005; } }
+.map-card { height: 420px; position: relative; overflow: hidden; border-radius: 20px; }
+.map { height: 100%; background: #10243a; }
+.fallback-map { position: relative; width: 100%; height: 100%; overflow: hidden; background-image: linear-gradient(#18314b 1px, transparent 1px), linear-gradient(90deg, #18314b 1px, transparent 1px); background-size: 52px 52px; }
+.road { position: absolute; background: #2c4054; box-shadow: inset 0 0 0 2px #43566a; }
+.road-horizontal { height: 76px; width: 120%; left: -10%; top: 48%; transform: rotate(-7deg); }
+.road-vertical { width: 68px; height: 120%; top: -10%; left: 58%; transform: rotate(8deg); }
+.radius-ring { position: absolute; width: 280px; height: 280px; border-radius: 50%; border: 2px dashed #38a4ff66; left: 50%; top: 52%; transform: translate(-50%, -50%); background: #38a4ff0c; }
+.vehicle { position: absolute; width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; font-weight: 900; border: 3px solid white; box-shadow: 0 6px 20px #0008; }
+.driver { background: #177bd0; left: 50%; top: 52%; transform: translate(-50%, -50%); }
+.emergency { background: var(--danger); left: 75%; top: 43%; transition: left .8s ease, top .8s ease; }
+.map-overlay { position: absolute; left: 14px; bottom: 14px; display: flex; flex-direction: column; padding: 10px 13px; background: #07111fe8; border: 1px solid var(--line); border-radius: 12px; }
+.map-overlay span { color: var(--muted); font-size: .76rem; margin-top: 2px; }
+.status-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.status-grid article { border-radius: 14px; padding: 15px; display: flex; flex-direction: column; }
+.status-grid span, small { color: var(--muted); font-size: .75rem; }
+.status-grid strong { margin-top: 5px; color: #cce7ff; }
+.controls, .hazards { border-radius: 18px; padding: 20px; }
+.controls { display: grid; grid-template-columns: 1fr auto; gap: 14px; align-items: center; }
+.controls h2, .hazards h2 { margin-bottom: 5px; }
+.controls p, .hazards > p { color: var(--muted); margin-bottom: 0; line-height: 1.6; }
+.switch-row { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+.switch-row input { position: absolute; opacity: 0; }
+.switch { width: 48px; height: 28px; border-radius: 999px; background: #34465a; position: relative; }
+.switch::after { content: ""; position: absolute; width: 20px; height: 20px; background: white; border-radius: 50%; top: 4px; left: 4px; transition: transform .2s; }
+.switch-row input:checked + .switch { background: var(--blue); }
+.switch-row input:checked + .switch::after { transform: translateX(20px); }
+.button-row { grid-column: 1 / -1; display: flex; gap: 10px; flex-wrap: wrap; }
+button { appearance: none; border: 0; border-radius: 11px; padding: 11px 16px; font: inherit; font-weight: 750; color: #03101b; background: var(--blue); cursor: pointer; }
+button.secondary { background: #263b52; color: var(--text); }
+button:focus-visible, input:focus-visible { outline: 3px solid white; outline-offset: 3px; }
+.controls.driving .button-row { display: none; }
+.hazards { display: grid; gap: 13px; }
+.hazard-item { display: flex; align-items: center; gap: 12px; background: #13253a; padding: 13px; border-radius: 12px; }
+.hazard-item div { display: flex; flex-direction: column; gap: 3px; }
+.hazard-dot { width: 12px; height: 12px; background: var(--warn); border-radius: 50%; box-shadow: 0 0 0 5px #ffb02022; }
+footer { color: #7f91a8; font-size: .78rem; text-align: center; line-height: 1.6; padding: 22px 0 34px; }
+@media (max-width: 650px) {
+  .topbar, main, footer { width: min(100% - 20px, 980px); }
+  .topbar { align-items: flex-start; }
+  .alert-panel { padding: 16px; gap: 12px; }
+  .direction-icon { min-width: 48px; height: 48px; border-radius: 14px; }
+  .map-card { height: 360px; }
+  .status-grid { grid-template-columns: 1fr; }
+  .controls { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }

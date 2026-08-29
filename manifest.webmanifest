@@ -1,0 +1,9 @@
+{
+  "name": "緊急車両セーフティナビ",
+  "short_name": "セーフティナビ",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#07111f",
+  "theme_color": "#0b6bcb",
+  "icons": []
+}

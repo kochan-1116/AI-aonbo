@@ -1,0 +1,12 @@
+{
+  "name": "emergency-vehicle-safety-mvp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "check": "node --check src/app.js && node --check src/safety.js && node --check sw.js",
+    "verify": "npm run check && npm test",
+    "serve": "python -m http.server 4173"
+  }
+}

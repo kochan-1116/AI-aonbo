@@ -34,13 +34,19 @@
       </section>
 
       <section class="map-card" aria-label="現在地周辺の地図">
-        <div id="map" class="map" role="img" aria-label="現在地と緊急車両の位置関係">
+        <div id="map" class="map" role="img" aria-label="自車の進行方向と緊急車両の位置関係">
           <div class="fallback-map">
             <div class="road road-horizontal"></div>
             <div class="road road-vertical"></div>
             <div class="radius-ring"></div>
             <div id="fallbackEmergency" class="vehicle emergency">救</div>
-            <div class="vehicle driver">自</div>
+            <div id="fallbackDriver" class="vehicle driver">
+              <span class="driver-heading" aria-hidden="true">
+                <span class="driver-heading-label">進行方向</span>
+                <span class="driver-heading-arrow">↑</span>
+              </span>
+              <span>自</span>
+            </div>
           </div>
         </div>
         <div class="map-overlay">

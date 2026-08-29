@@ -42,6 +42,9 @@ main { display: grid; gap: 16px; }
 .radius-ring { position: absolute; width: 280px; height: 280px; border-radius: 50%; border: 2px dashed #38a4ff66; left: 50%; top: 52%; transform: translate(-50%, -50%); background: #38a4ff0c; }
 .vehicle { position: absolute; width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; font-weight: 900; border: 3px solid white; box-shadow: 0 6px 20px #0008; }
 .driver { background: #177bd0; left: 50%; top: 52%; transform: translate(-50%, -50%); }
+.driver-heading { position: absolute; left: 50%; bottom: calc(100% + 5px); display: grid; justify-items: center; gap: 1px; transform: translateX(-50%); color: white; text-shadow: 0 2px 5px #000; pointer-events: none; }
+.driver-heading-label { padding: 2px 5px; border-radius: 5px; background: #07111fcc; font-size: .62rem; line-height: 1.1; white-space: nowrap; }
+.driver-heading-arrow { font-size: 2rem; line-height: .75; transform: rotate(var(--driver-heading, 0deg)); transform-origin: center; }
 .emergency { background: var(--danger); left: 75%; top: 43%; transition: left .8s ease, top .8s ease; }
 .map-overlay { position: absolute; left: 14px; bottom: 14px; display: flex; flex-direction: column; padding: 10px 13px; background: #07111fe8; border: 1px solid var(--line); border-radius: 12px; }
 .map-overlay span { color: var(--muted); font-size: .76rem; margin-top: 2px; }

@@ -21,6 +21,7 @@ const elements = {
   distance: document.querySelector("#distanceText"),
   freshness: document.querySelector("#freshnessText"),
   emergency: document.querySelector("#fallbackEmergency"),
+  driver: document.querySelector("#fallbackDriver"),
   drivingMode: document.querySelector("#drivingMode"),
   controls: document.querySelector(".controls"),
   soundStatus: document.querySelector("#soundStatus"),
@@ -108,12 +109,13 @@ function runScenario(name) {
   const driver = { ...TOKYO_STATION, timestamp };
   renderResult(evaluateEmergencyApproach({ driver, emergency, now: timestamp }));
   const positions = {
-    approach: [63, 31], rear: [50, 72], critical: [57, 42], away: [69, 38],
-    outside: [78, 18], inaccurate: [70, 34], stale: [72, 35]
+    approach: [50, 31], rear: [50, 72], critical: [50, 42], away: [50, 38],
+    outside: [50, 18], inaccurate: [50, 34], stale: [50, 35]
   };
   const [left, top] = positions[name];
   elements.emergency.style.left = `${left}%`;
   elements.emergency.style.top = `${top}%`;
+  elements.driver.style.setProperty("--driver-heading", `${driver.heading}deg`);
   updateMarkerPosition(emergencyMarker, { lat: emergency.lat, lng: emergency.lng });
 }
 

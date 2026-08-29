@@ -40,6 +40,14 @@ export function headingFromMovement(previous, current, fallbackHeading = 0) {
   return bearingDegrees(previous, current);
 }
 
+export function driverForSimulation(driver, timestamp, maxAccuracy = 12) {
+  return {
+    ...driver,
+    accuracy: Math.min(driver.accuracy, maxAccuracy),
+    timestamp
+  };
+}
+
 export function locationSourceLabel({ mapProvider = "fallback", tracking = false, hasFix = false } = {}) {
   const mapSource = {
     google: "Google Maps",

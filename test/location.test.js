@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { driverFromGeolocation, GEOLOCATION_OPTIONS, headingFromMovement, locationSourceLabel } from "../src/location.js";
+import { driverForSimulation, driverFromGeolocation, GEOLOCATION_OPTIONS, headingFromMovement, locationSourceLabel } from "../src/location.js";
 
 test("GPS位置を安全判定用の形式へ変換する", () => {
   const driver = driverFromGeolocation({
@@ -48,6 +48,13 @@ test("古すぎるGPS更新や時刻が逆転した更新では進行方向を�
   const moved = { lat: 35.001, lng: 139, accuracy: 5, timestamp: 50_001 };
   assert.equal(headingFromMovement(previous, moved, 45), 45);
   assert.equal(headingFromMovement(previous, { ...moved, timestamp: 9_000 }, 45), 45);
+});
+
+test("実証シナリオは実測GPSの位置を保ちつつ精度と時刻をテスト値へ置き換える", () => {
+  const current = { lat: 35.7, lng: 139.7, accuracy: 113, heading: 90, timestamp: 1_000 };
+  assert.deepEqual(driverForSimulation(current, 50_000), {
+    lat: 35.7, lng: 139.7, accuracy: 12, heading: 90, timestamp: 50_000
+  });
 });
 
 test("不正なGPS座標・精度・時刻は採用しない", () => {

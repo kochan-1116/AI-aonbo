@@ -38,10 +38,10 @@ main { display: grid; gap: 16px; }
 .fallback-map { position: relative; width: 100%; height: 100%; overflow: hidden; background-image: linear-gradient(#18314b 1px, transparent 1px), linear-gradient(90deg, #18314b 1px, transparent 1px); background-size: 52px 52px; }
 .road { position: absolute; background: #2c4054; box-shadow: inset 0 0 0 2px #43566a; }
 .road-horizontal { height: 76px; width: 120%; left: -10%; top: 48%; transform: rotate(-7deg); }
-.road-vertical { width: 68px; height: 120%; top: -10%; left: 58%; transform: rotate(8deg); }
+.road-vertical { width: 68px; height: 120%; top: -10%; left: 58%; transform: translateX(-50%) rotate(8deg); }
 .radius-ring { position: absolute; width: 280px; height: 280px; border-radius: 50%; border: 2px dashed #38a4ff66; left: 50%; top: 52%; transform: translate(-50%, -50%); background: #38a4ff0c; }
 .vehicle { position: absolute; width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; font-weight: 900; border: 3px solid white; box-shadow: 0 6px 20px #0008; }
-.driver { background: #177bd0; left: 50%; top: 52%; transform: translate(-50%, -50%); }
+.driver { background: #177bd0; left: 58%; top: 52%; transform: translate(-50%, -50%); }
 .driver-heading { position: absolute; left: 50%; bottom: calc(100% + 5px); display: grid; justify-items: center; gap: 1px; transform: translateX(-50%); color: white; text-shadow: 0 2px 5px #000; pointer-events: none; }
 .driver-heading-label { padding: 2px 5px; border-radius: 5px; background: #07111fcc; font-size: .62rem; line-height: 1.1; white-space: nowrap; }
 .driver-heading-arrow { font-size: 2rem; line-height: .75; transform: rotate(var(--driver-heading, 0deg)); transform-origin: center; }

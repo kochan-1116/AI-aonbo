@@ -110,8 +110,8 @@ function runScenario(name) {
   const driver = { ...TOKYO_STATION, timestamp };
   renderResult(evaluateEmergencyApproach({ driver, emergency, now: timestamp }));
   const positions = {
-    approach: [50, 31], rear: [50, 72], critical: [50, 42], away: [50, 38],
-    outside: [50, 18], inaccurate: [50, 34], stale: [50, 35]
+    approach: [58, 31], rear: [58, 72], critical: [58, 42], away: [58, 38],
+    outside: [58, 18], inaccurate: [58, 34], stale: [58, 35]
   };
   const [left, top] = positions[name];
   elements.emergency.style.left = `${left}%`;

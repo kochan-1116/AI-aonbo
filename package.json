@@ -3,10 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "test": "node --test",
-    "check": "node --check src/app.js && node --check src/safety.js && node --check src/map-adapter.js && node --check sw.js",
+    "check": "node --check server.js && node --check src/app.js && node --check src/safety.js && node --check src/map-adapter.js && node --check sw.js",
     "verify": "npm run check && npm test",
-    "serve": "python -m http.server 4173"
+    "serve": "python -m http.server 4173",
+    "start": "node server.js"
   }
 }

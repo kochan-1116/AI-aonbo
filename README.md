@@ -63,7 +63,17 @@ Node.js 20以降で次を実行します。
 npm run verify
 ```
 
-62種類の自動テストで、距離・方位、GPS移動方向、実証シナリオの分離、50m/200m/500m境界、接近・離反、交差点での予測衝突、データ鮮度、GPS精度不足、異常時刻・速度・座標、欠損データ、Google Maps・OpenStreetMapのマーカー更新、2,000通りのランダム入力を検証します。
+64種類の自動テストで、距離・方位、GPS移動方向、実証シナリオの分離、50m/200m/500m境界、接近・離反、交差点での予測衝突、データ鮮度、GPS精度不足、異常時刻・速度・座標、欠損データ、Google Maps・OpenStreetMapのマーカー更新、本番サーバーの公開範囲とセキュリティヘッダー、2,000通りのランダム入力を検証します。
+
+## Google Cloud Runへの公開
+
+本番サーバーはCloud Runの`PORT`環境変数に対応しています。Google Cloud CLIを設定した環境では、プロジェクトとリージョンを選択後に次のコマンドで公開できます。
+
+```bash
+gcloud run deploy emergency-vehicle-safety --source . --region asia-northeast1 --allow-unauthenticated
+```
+
+Cloud RunのHTTPS URL上では、ブラウザの位置情報許可を得てGPS追従を利用できます。`/healthz`はデプロイ後の稼働確認用です。
 
 ## 本番導入前に必要なこと
 

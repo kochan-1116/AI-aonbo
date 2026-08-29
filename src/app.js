@@ -22,6 +22,7 @@ const elements = {
   emergency: document.querySelector("#fallbackEmergency"),
   drivingMode: document.querySelector("#drivingMode"),
   controls: document.querySelector(".controls"),
+  soundStatus: document.querySelector("#soundStatus"),
   badge: document.querySelector("#connectionBadge")
 };
 
@@ -29,12 +30,54 @@ let lastAnnouncement = "";
 let map;
 let driverMarker;
 let emergencyMarker;
+let audioContext;
 
-function announceOnce(message, key) {
-  if (!elements.drivingMode.checked || key === lastAnnouncement || !("speechSynthesis" in window)) return;
-  window.speechSynthesis.cancel();
-  window.speechSynthesis.speak(new SpeechSynthesisUtterance(message));
+async function playAlertTone() {
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) return false;
+  try {
+    audioContext ||= new AudioContextClass();
+    if (audioContext.state === "suspended") await audioContext.resume();
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(880, audioContext.currentTime);
+    gain.gain.setValueAtTime(0.0001, audioContext.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.22, audioContext.currentTime + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.22);
+    oscillator.connect(gain).connect(audioContext.destination);
+    oscillator.start();
+    oscillator.stop(audioContext.currentTime + 0.23);
+    return true;
+  } catch (error) {
+    console.warn("警告音を再生できませんでした。", error);
+    return false;
+  }
+}
+
+function announceOnce(message, key, { force = false } = {}) {
+  if (!force && key === lastAnnouncement) return false;
+  const speechSupported = "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
+  elements.soundStatus.textContent = "警告音を再生しています…";
+  playAlertTone().then((toneStarted) => {
+    if (toneStarted && speechSupported) elements.soundStatus.textContent = "警告音と音声を再生しました";
+    else if (toneStarted) elements.soundStatus.textContent = "警告音を再生しました";
+    else if (speechSupported) elements.soundStatus.textContent = "音声を再生しました。端末の音量を確認してください";
+    else elements.soundStatus.textContent = "このブラウザでは警告音を再生できません";
+  });
+  if (speechSupported) {
+    const utterance = new SpeechSynthesisUtterance(message);
+    utterance.lang = "ja-JP";
+    utterance.rate = 0.95;
+    utterance.volume = 1;
+    utterance.addEventListener("error", () => {
+      elements.soundStatus.textContent = "音声を再生できませんでした。端末の音量を確認してください";
+    });
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utterance);
+  }
   lastAnnouncement = key;
+  return true;
 }
 
 function renderResult(result) {
@@ -76,9 +119,11 @@ function runScenario(name) {
 document.querySelectorAll("[data-scenario]").forEach((button) => {
   button.addEventListener("click", () => runScenario(button.dataset.scenario));
 });
+document.querySelector("#testSound").addEventListener("click", () => {
+  announceOnce("警告音のテストです。緊急車両の接近時はこのようにお知らせします。", "manual-test", { force: true });
+});
 elements.drivingMode.addEventListener("change", () => {
   elements.controls.classList.toggle("driving", elements.drivingMode.checked);
-  if (!elements.drivingMode.checked && "speechSynthesis" in window) window.speechSynthesis.cancel();
 });
 
 async function loadGoogleMap() {

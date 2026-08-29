@@ -3,6 +3,12 @@ export function googleMapsScriptUrl(apiKey, callbackName) {
   return `https://maps.googleapis.com/maps/api/js?${params}`;
 }
 
+export function googleMapsUrl(position) {
+  if (!position || !Number.isFinite(position.lat) || !Number.isFinite(position.lng)) return null;
+  const params = new URLSearchParams({ api: "1", query: `${position.lat},${position.lng}` });
+  return `https://www.google.com/maps/search/?${params}`;
+}
+
 export function updateMarkerPosition(marker, position) {
   if (!marker) return false;
   if (typeof marker.setPosition === "function") marker.setPosition(position);

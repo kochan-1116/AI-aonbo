@@ -1,5 +1,5 @@
 import { evaluateEmergencyApproach } from "./safety.js";
-import { loadGoogleMapsApi, updateMarkerPosition } from "./map-adapter.js";
+import { googleMapsUrl, loadGoogleMapsApi, updateMarkerPosition } from "./map-adapter.js";
 
 const TOKYO_STATION = { lat: 35.681236, lng: 139.767125, heading: 0, speedMps: 12, accuracy: 12 };
 const scenarios = {
@@ -22,6 +22,7 @@ const elements = {
   freshness: document.querySelector("#freshnessText"),
   emergency: document.querySelector("#fallbackEmergency"),
   driver: document.querySelector("#fallbackDriver"),
+  mapsLink: document.querySelector("#openGoogleMaps"),
   drivingMode: document.querySelector("#drivingMode"),
   controls: document.querySelector(".controls"),
   soundStatus: document.querySelector("#soundStatus"),
@@ -117,6 +118,7 @@ function runScenario(name) {
   elements.emergency.style.top = `${top}%`;
   elements.driver.style.setProperty("--driver-heading", `${driver.heading}deg`);
   elements.emergency.style.setProperty("--emergency-heading", `${emergency.heading}deg`);
+  elements.mapsLink.href = googleMapsUrl(driver);
   updateMarkerPosition(emergencyMarker, { lat: emergency.lat, lng: emergency.lng });
 }
 

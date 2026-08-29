@@ -4,6 +4,7 @@ import { loadGoogleMapsApi, updateMarkerPosition } from "./map-adapter.js";
 const TOKYO_STATION = { lat: 35.681236, lng: 139.767125, heading: 0, speedMps: 12, accuracy: 12 };
 const scenarios = {
   approach: { lat: 35.6840, lng: 139.767125, heading: 180, speedMps: 15, accuracy: 10 },
+  rear: { lat: 35.6785, lng: 139.767125, heading: 0, speedMps: 15, accuracy: 10 },
   critical: { lat: 35.6820, lng: 139.767125, heading: 180, speedMps: 12, accuracy: 10 },
   away: { lat: 35.6832, lng: 139.767125, heading: 0, speedMps: 15, accuracy: 10 },
   outside: { lat: 35.6870, lng: 139.767125, heading: 180, speedMps: 15, accuracy: 10 },
@@ -107,7 +108,7 @@ function runScenario(name) {
   const driver = { ...TOKYO_STATION, timestamp };
   renderResult(evaluateEmergencyApproach({ driver, emergency, now: timestamp }));
   const positions = {
-    approach: [63, 31], critical: [57, 42], away: [69, 38],
+    approach: [63, 31], rear: [50, 72], critical: [57, 42], away: [69, 38],
     outside: [78, 18], inaccurate: [70, 34], stale: [72, 35]
   };
   const [left, top] = positions[name];

@@ -14,6 +14,15 @@ const northAt = (meters, overrides = {}) => ({
   timestamp: now,
   ...overrides
 });
+const southAt = (meters, overrides = {}) => ({
+  lat: baseDriver.lat - meters / metersPerLatitudeDegree,
+  lng: baseDriver.lng,
+  heading: 0,
+  speedMps: 15,
+  accuracy: 10,
+  timestamp: now,
+  ...overrides
+});
 const evaluate = (emergency, driver = baseDriver, time = now) =>
   evaluateEmergencyApproach({ driver, emergency, now: time });
 
@@ -53,6 +62,13 @@ test("速度情報がない旧端末でも直接接近を判定できる", () =>
   const driver = { ...baseDriver, speedMps: undefined };
   const emergency = northAt(300, { speedMps: undefined });
   assert.equal(evaluate(emergency, driver).level, "warning");
+});
+
+test("後方から近づく緊急車両を後方接近として警告する", () => {
+  const result = evaluate(southAt(300));
+  assert.equal(result.level, "warning");
+  assert.equal(result.direction, "後方");
+  assert.equal(result.reason, "後方から緊急車両が接近しています");
 });
 
 test("交差点へ異なる方向から進入する衝突コースを検知する", () => {

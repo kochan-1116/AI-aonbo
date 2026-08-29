@@ -116,6 +116,7 @@ function runScenario(name) {
   elements.emergency.style.left = `${left}%`;
   elements.emergency.style.top = `${top}%`;
   elements.driver.style.setProperty("--driver-heading", `${driver.heading}deg`);
+  elements.emergency.style.setProperty("--emergency-heading", `${emergency.heading}deg`);
   updateMarkerPosition(emergencyMarker, { lat: emergency.lat, lng: emergency.lng });
 }
 

@@ -46,6 +46,7 @@ main { display: grid; gap: 16px; }
 .driver-heading-label { padding: 2px 5px; border-radius: 5px; background: #07111fcc; font-size: .62rem; line-height: 1.1; white-space: nowrap; }
 .driver-heading-arrow { font-size: 2rem; line-height: .75; transform: rotate(var(--driver-heading, 0deg)); transform-origin: center; }
 .emergency { background: var(--danger); left: 75%; top: 43%; transition: left .8s ease, top .8s ease; }
+.emergency-heading-arrow { position: absolute; left: 50%; bottom: calc(100% + 5px); font-size: 1.8rem; line-height: .75; transform: translateX(-50%) rotate(var(--emergency-heading, 0deg)); transform-origin: center; color: #ffd9dc; text-shadow: 0 2px 5px #000; pointer-events: none; }
 .map-overlay { position: absolute; left: 14px; bottom: 14px; display: flex; flex-direction: column; padding: 10px 13px; background: #07111fe8; border: 1px solid var(--line); border-radius: 12px; }
 .map-overlay span { color: var(--muted); font-size: .76rem; margin-top: 2px; }
 .status-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }

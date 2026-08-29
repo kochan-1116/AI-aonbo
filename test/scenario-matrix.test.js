@@ -4,7 +4,7 @@ import { evaluateEmergencyApproach } from "../src/safety.js";
 
 const now = 1_800_000_000_000;
 const metersPerLatitudeDegree = 111_195;
-const baseDriver = { lat: 35, lng: 139, heading: 0, speedMps: 12, accuracy: 10 };
+const baseDriver = { lat: 35, lng: 139, heading: 0, speedMps: 12, accuracy: 10, timestamp: now };
 const northAt = (meters, overrides = {}) => ({
   lat: baseDriver.lat + meters / metersPerLatitudeDegree,
   lng: baseDriver.lng,
@@ -56,7 +56,7 @@ test("速度情報がない旧端末でも直接接近を判定できる", () =>
 });
 
 test("交差点へ異なる方向から進入する衝突コースを検知する", () => {
-  const driver = { lat: 35, lng: 139, heading: 0, speedMps: 25, accuracy: 10 };
+  const driver = { lat: 35, lng: 139, heading: 0, speedMps: 25, accuracy: 10, timestamp: now };
   const emergency = {
     lat: 35 + 250 / metersPerLatitudeDegree,
     lng: 139 - 50 / (metersPerLatitudeDegree * Math.cos(35 * Math.PI / 180)),
@@ -71,7 +71,7 @@ test("交差点へ異なる方向から進入する衝突コースを検知す�
 });
 
 test("交差して見えても到達時間が異なる場合は衝突コースとしない", () => {
-  const driver = { lat: 35, lng: 139, heading: 0, speedMps: 5, accuracy: 10 };
+  const driver = { lat: 35, lng: 139, heading: 0, speedMps: 5, accuracy: 10, timestamp: now };
   const emergency = {
     lat: 35 + 250 / metersPerLatitudeDegree,
     lng: 139 - 50 / (metersPerLatitudeDegree * Math.cos(35 * Math.PI / 180)),
@@ -86,7 +86,7 @@ test("交差して見えても到達時間が異なる場合は衝突コース�
 });
 
 test("一般車の進行方向が不明なら推測で交差衝突と判定しない", () => {
-  const driver = { lat: 35, lng: 139, speedMps: 25, accuracy: 10 };
+  const driver = { lat: 35, lng: 139, speedMps: 25, accuracy: 10, timestamp: now };
   const emergency = {
     lat: 35 + 250 / metersPerLatitudeDegree,
     lng: 139 - 50 / (metersPerLatitudeDegree * Math.cos(35 * Math.PI / 180)),
@@ -113,7 +113,8 @@ test("2,000通りの位置・速度・方位で例外や不正な判定値を出
       lng: -170 + random() * 340,
       heading: random() * 360,
       speedMps: random() * 45,
-      accuracy: random() * 100
+      accuracy: random() * 100,
+      timestamp: now - random() * 8_000
     };
     const emergency = {
       lat: Math.max(-90, Math.min(90, driver.lat + (random() - 0.5) * 0.02)),

@@ -4,6 +4,7 @@ export const MAX_DATA_AGE_MS = 8_000;
 export const MAX_ACCEPTABLE_ACCURACY_M = 100;
 export const COLLISION_HORIZON_S = 30;
 export const COLLISION_CLEARANCE_M = 60;
+export const IMMEDIATE_PROXIMITY_M = 50;
 
 const toRadians = (degrees) => degrees * Math.PI / 180;
 const toDegrees = (radians) => radians * 180 / Math.PI;
@@ -48,8 +49,9 @@ function projectedCollision(driver, emergency) {
 
   const meanLatitude = toRadians((driver.lat + emergency.lat) / 2);
   const earthRadiusM = 6_371_000;
+  const longitudeDelta = ((emergency.lng - driver.lng + 540) % 360) - 180;
   const relativePosition = {
-    x: toRadians(emergency.lng - driver.lng) * earthRadiusM * Math.cos(meanLatitude),
+    x: toRadians(longitudeDelta) * earthRadiusM * Math.cos(meanLatitude),
     y: toRadians(emergency.lat - driver.lat) * earthRadiusM
   };
   const velocity = (heading, speed) => ({
@@ -76,7 +78,7 @@ function projectedCollision(driver, emergency) {
   return closestDistance <= COLLISION_CLEARANCE_M;
 }
 
-export function evaluateEmergencyApproach({ driver, emergency, now = Date.now() }) {
+export function evaluateEmergencyApproach({ driver, emergency, now = Date.now() } = {}) {
   if (!driver || !emergency) {
     return { level: "unavailable", reason: "位置情報を取得できません" };
   }
@@ -84,8 +86,8 @@ export function evaluateEmergencyApproach({ driver, emergency, now = Date.now() 
     && Number.isFinite(point.lng)
     && point.lat >= -90 && point.lat <= 90
     && point.lng >= -180 && point.lng <= 180;
-  const validAccuracy = (value) => value === undefined
-    || (Number.isFinite(value) && value >= 0 && value <= MAX_ACCEPTABLE_ACCURACY_M);
+  const validAccuracy = (value) => Number.isFinite(value)
+    && value >= 0 && value <= MAX_ACCEPTABLE_ACCURACY_M;
   const validSpeed = (value) => value === undefined || (Number.isFinite(value) && value >= 0);
   if (!Number.isFinite(now) || !validCoordinate(driver) || !validCoordinate(emergency)
     || !Number.isFinite(emergency.heading)) {
@@ -97,11 +99,11 @@ export function evaluateEmergencyApproach({ driver, emergency, now = Date.now() 
   if (now < emergency.timestamp - 1_000) {
     return { level: "unavailable", reason: "位置情報の時刻が正しくありません" };
   }
-  if (driver.timestamp !== undefined && (
+  if (
     !Number.isFinite(driver.timestamp)
     || now - driver.timestamp > MAX_DATA_AGE_MS
     || now < driver.timestamp - 1_000
-  )) {
+  ) {
     return { level: "unavailable", reason: "現在地の情報が更新されていません" };
   }
   if (!validAccuracy(driver.accuracy) || !validAccuracy(emergency.accuracy)) {
@@ -115,12 +117,13 @@ export function evaluateEmergencyApproach({ driver, emergency, now = Date.now() 
   const fromEmergencyToDriver = bearingDegrees(emergency, driver);
   const directApproach = angularDifference(emergency.heading, fromEmergencyToDriver) <= 75;
   const collisionCourse = projectedCollision(driver, emergency);
-  const approaching = directApproach || collisionCourse;
+  const immediateProximity = distance <= IMMEDIATE_PROXIMITY_M;
+  const approaching = immediateProximity || directApproach || collisionCourse;
   const driverHeading = Number.isFinite(driver.heading) ? driver.heading : 0;
   const direction = directionLabel(driverHeading, bearingDegrees(driver, emergency));
 
   if (distance > MAX_ALERT_DISTANCE_M || !approaching) {
-    return { level: "safe", distance, direction, approaching, collisionCourse, reason: "接近する緊急車両はありません" };
+    return { level: "safe", distance, direction, approaching, collisionCourse, immediateProximity, reason: "接近する緊急車両はありません" };
   }
   return {
     level: distance <= CRITICAL_DISTANCE_M ? "critical" : "warning",
@@ -128,6 +131,7 @@ export function evaluateEmergencyApproach({ driver, emergency, now = Date.now() 
     direction,
     approaching,
     collisionCourse,
+    immediateProximity,
     reason: `${direction}から緊急車両が接近しています`
   };
 }

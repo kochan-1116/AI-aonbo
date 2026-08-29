@@ -1,4 +1,5 @@
 import { evaluateEmergencyApproach } from "./safety.js";
+import { loadGoogleMapsApi, updateMarkerPosition } from "./map-adapter.js";
 
 const TOKYO_STATION = { lat: 35.681236, lng: 139.767125, heading: 0, speedMps: 12, accuracy: 12 };
 const scenarios = {
@@ -55,11 +56,13 @@ function renderResult(result) {
 
 function runScenario(name) {
   const scenario = scenarios[name];
+  const timestamp = Date.now();
   const emergency = {
     ...scenario,
-    timestamp: Date.now() - (scenario.stale ? 20_000 : 0)
+    timestamp: timestamp - (scenario.stale ? 20_000 : 0)
   };
-  renderResult(evaluateEmergencyApproach({ driver: TOKYO_STATION, emergency }));
+  const driver = { ...TOKYO_STATION, timestamp };
+  renderResult(evaluateEmergencyApproach({ driver, emergency, now: timestamp }));
   const positions = {
     approach: [63, 31], critical: [57, 42], away: [69, 38],
     outside: [78, 18], inaccurate: [70, 34], stale: [72, 35]
@@ -67,7 +70,7 @@ function runScenario(name) {
   const [left, top] = positions[name];
   elements.emergency.style.left = `${left}%`;
   elements.emergency.style.top = `${top}%`;
-  if (emergencyMarker) emergencyMarker.position = { lat: emergency.lat, lng: emergency.lng };
+  updateMarkerPosition(emergencyMarker, { lat: emergency.lat, lng: emergency.lng });
 }
 
 document.querySelectorAll("[data-scenario]").forEach((button) => {
@@ -82,9 +85,7 @@ async function loadGoogleMap() {
   const key = window.APP_CONFIG?.googleMapsApiKey;
   if (!key || key.includes("YOUR_")) return;
   try {
-    const { Loader } = await import("https://unpkg.com/@googlemaps/js-api-loader@1.16.8/dist/index.esm.js");
-    const loader = new Loader({ apiKey: key, version: "weekly" });
-    await loader.load();
+    await loadGoogleMapsApi(key);
     document.querySelector("#map").innerHTML = "";
     map = new google.maps.Map(document.querySelector("#map"), { center: TOKYO_STATION, zoom: 16, disableDefaultUI: true });
     driverMarker = new google.maps.Marker({ map, position: TOKYO_STATION, title: "現在地" });

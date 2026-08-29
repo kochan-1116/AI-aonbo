@@ -9,7 +9,7 @@ import {
 } from "../src/safety.js";
 
 const now = 1_800_000_000_000;
-const driver = { lat: 35.681236, lng: 139.767125, heading: 0, accuracy: 10 };
+const driver = { lat: 35.681236, lng: 139.767125, heading: 0, accuracy: 10, timestamp: now };
 const emergency = (overrides = {}) => ({
   lat: 35.6840,
   lng: 139.767125,

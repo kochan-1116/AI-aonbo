@@ -1,5 +1,6 @@
 import { evaluateEmergencyApproach } from "./safety.js";
 import { googleMapsUrl, loadGoogleMapsApi, updateMarkerPosition } from "./map-adapter.js";
+import { driverFromGeolocation, GEOLOCATION_OPTIONS, locationSourceLabel } from "./location.js";
 
 const TOKYO_STATION = { lat: 35.681236, lng: 139.767125, heading: 0, speedMps: 12, accuracy: 12 };
 const scenarios = {
@@ -37,8 +38,17 @@ let driverMarker;
 let emergencyMarker;
 let audioContext;
 let currentDriver = { ...TOKYO_STATION };
+let currentEmergency;
 let usingLiveLocation = false;
 let locationWatchId = null;
+
+function updateConnectionBadge() {
+  elements.badge.textContent = locationSourceLabel({
+    hasMap: Boolean(map),
+    tracking: locationWatchId !== null,
+    hasFix: usingLiveLocation
+  });
+}
 
 async function playAlertTone() {
   const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -108,7 +118,10 @@ function renderResult(result) {
 function runScenario(name) {
   const scenario = scenarios[name];
   const timestamp = Date.now();
-  const driver = { ...currentDriver, timestamp };
+  const driver = {
+    ...currentDriver,
+    timestamp: usingLiveLocation ? currentDriver.timestamp : timestamp
+  };
   const latitudeOffset = scenario.lat - TOKYO_STATION.lat;
   const longitudeOffset = scenario.lng - TOKYO_STATION.lng;
   const emergency = {
@@ -117,6 +130,7 @@ function runScenario(name) {
     lng: driver.lng + longitudeOffset,
     timestamp: timestamp - (scenario.stale ? 20_000 : 0)
   };
+  currentEmergency = emergency;
   renderResult(evaluateEmergencyApproach({ driver, emergency, now: timestamp }));
   const positions = {
     approach: [58, 31], rear: [58, 72], critical: [58, 42], away: [58, 38],
@@ -144,22 +158,22 @@ function stopLocationWatch() {
   locationWatchId = null;
   elements.getLocation.textContent = "GPS追従を開始";
   elements.getLocation.classList.add("secondary");
+  updateConnectionBadge();
 }
 
-function handleLocationUpdate({ coords, timestamp }) {
-  currentDriver = {
-    lat: coords.latitude,
-    lng: coords.longitude,
-    heading: Number.isFinite(coords.heading) ? coords.heading : currentDriver.heading,
-    speedMps: Number.isFinite(coords.speed) && coords.speed >= 0 ? coords.speed : 0,
-    accuracy: coords.accuracy,
-    timestamp
-  };
+function handleLocationUpdate(position) {
+  const driver = driverFromGeolocation(position, currentDriver.heading);
+  if (!driver) {
+    elements.locationStatus.textContent = "GPSから不正な位置情報を受信しました";
+    return;
+  }
+  currentDriver = driver;
   usingLiveLocation = true;
   updateMarkerPosition(driverMarker, currentDriver);
   if (map) map.setCenter(currentDriver);
+  elements.driver.style.setProperty("--driver-heading", `${currentDriver.heading}deg`);
   elements.mapsLink.href = googleMapsUrl(currentDriver);
-  elements.badge.textContent = map ? "Google Maps / GPS追従中" : "簡易地図 / GPS追従中";
+  updateConnectionBadge();
   elements.locationStatus.textContent = `GPS追従中（精度 約${Math.round(currentDriver.accuracy)}m）`;
 }
 
@@ -177,11 +191,20 @@ elements.getLocation.addEventListener("click", () => {
   elements.getLocation.textContent = "GPS追従を停止";
   elements.getLocation.classList.remove("secondary");
   elements.locationStatus.textContent = "GPS追従を開始しています…";
-  locationWatchId = navigator.geolocation.watchPosition(handleLocationUpdate, (error) => {
-    const reason = error.code === 1 ? "位置情報の利用が許可されていません" : "GPSを取得できませんでした";
-    elements.locationStatus.textContent = `${reason}。追従を継続しています`;
-    if (error.code === 1) stopLocationWatch();
-  }, { enableHighAccuracy: true, maximumAge: 5_000, timeout: 15_000 });
+  try {
+    locationWatchId = navigator.geolocation.watchPosition(handleLocationUpdate, (error) => {
+      const reason = error.code === 1 ? "位置情報の利用が許可されていません" : "GPSを取得できませんでした";
+      elements.locationStatus.textContent = error.code === 1
+        ? `${reason}。端末の設定を確認してください`
+        : `${reason}。追従を継続しています`;
+      if (error.code === 1) stopLocationWatch();
+    }, GEOLOCATION_OPTIONS);
+    updateConnectionBadge();
+  } catch (error) {
+    console.warn("GPS追従を開始できませんでした。", error);
+    elements.locationStatus.textContent = "GPS追従を開始できませんでした。HTTPSと端末設定を確認してください";
+    stopLocationWatch();
+  }
   elements.getLocation.disabled = false;
 });
 elements.drivingMode.addEventListener("change", () => {
@@ -190,17 +213,20 @@ elements.drivingMode.addEventListener("change", () => {
 
 async function loadGoogleMap() {
   const key = window.APP_CONFIG?.googleMapsApiKey;
-  if (!key || key.includes("YOUR_")) return;
+  if (!key || key.includes("YOUR_")) {
+    updateConnectionBadge();
+    return;
+  }
   try {
     await loadGoogleMapsApi(key);
     document.querySelector("#map").innerHTML = "";
     map = new google.maps.Map(document.querySelector("#map"), { center: currentDriver, zoom: 16, disableDefaultUI: true });
     driverMarker = new google.maps.Marker({ map, position: currentDriver, title: "現在地" });
-    emergencyMarker = new google.maps.Marker({ map, position: scenarios.approach, title: "緊急車両（模擬）" });
-    elements.badge.textContent = "Google Maps / 模擬データ";
+    emergencyMarker = new google.maps.Marker({ map, position: currentEmergency, title: "緊急車両（模擬）" });
+    updateConnectionBadge();
   } catch (error) {
     console.warn("Google Mapsを読み込めないため、安全な簡易地図を使用します。", error);
-    elements.badge.textContent = "簡易地図 / 模擬データ";
+    updateConnectionBadge();
   }
 }
 

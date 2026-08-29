@@ -1,7 +1,7 @@
-const CACHE_NAME = "safety-nav-v14";
+const CACHE_NAME = "safety-nav-v16";
 const APP_SHELL = [
   "./", "./index.html", "./styles.css", "./src/app.js", "./src/safety.js",
-  "./src/map-adapter.js", "./manifest.webmanifest", "./assets/app-icon.png"
+  "./src/map-adapter.js", "./src/location.js", "./manifest.webmanifest", "./assets/app-icon.png"
 ];
 self.addEventListener("install", (event) => event.waitUntil((async () => {
   const cache = await caches.open(CACHE_NAME);

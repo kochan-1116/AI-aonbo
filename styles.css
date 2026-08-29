@@ -35,6 +35,12 @@ main { display: grid; gap: 16px; }
 @keyframes pulse { to { box-shadow: 0 0 0 3px #ff5a6733, 0 18px 50px #0005; } }
 .map-card { height: 420px; position: relative; overflow: hidden; border-radius: 20px; }
 .map { height: 100%; background: #10243a; }
+.leaflet-container { font-family: inherit; }
+.leaflet-vehicle-icon { border: 0; background: transparent; }
+.leaflet-vehicle { position: relative; display: grid; place-items: center; width: 42px; height: 42px; border: 3px solid white; border-radius: 50%; color: white; font-weight: 900; box-shadow: 0 6px 20px #0008; }
+.leaflet-vehicle::before { content: "↑"; position: absolute; left: 50%; bottom: calc(100% + 4px); color: white; font-size: 1.8rem; line-height: .75; text-shadow: 0 2px 5px #000; transform: translateX(-50%) rotate(var(--marker-heading, 0deg)); transform-origin: center; }
+.leaflet-vehicle.driver-map-marker { background: #177bd0; }
+.leaflet-vehicle.emergency-map-marker { background: var(--danger); }
 .fallback-map { position: relative; width: 100%; height: 100%; overflow: hidden; background-image: linear-gradient(#18314b 1px, transparent 1px), linear-gradient(90deg, #18314b 1px, transparent 1px); background-size: 52px 52px; }
 .road { position: absolute; background: #2c4054; box-shadow: inset 0 0 0 2px #43566a; }
 .road-horizontal { height: 76px; width: 120%; left: -10%; top: 48%; transform: rotate(-7deg); }

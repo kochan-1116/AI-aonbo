@@ -1,5 +1,5 @@
 import { evaluateEmergencyApproach } from "./safety.js";
-import { googleMapsUrl, loadGoogleMapsApi, updateMarkerPosition } from "./map-adapter.js";
+import { centerMap, googleMapsUrl, loadGoogleMapsApi, updateMarkerPosition } from "./map-adapter.js";
 import { driverFromGeolocation, GEOLOCATION_OPTIONS, locationSourceLabel } from "./location.js";
 
 const TOKYO_STATION = { lat: 35.681236, lng: 139.767125, heading: 0, speedMps: 12, accuracy: 12 };
@@ -34,6 +34,7 @@ const elements = {
 
 let lastAnnouncement = "";
 let map;
+let mapProvider = "fallback";
 let driverMarker;
 let emergencyMarker;
 let audioContext;
@@ -44,10 +45,26 @@ let locationWatchId = null;
 
 function updateConnectionBadge() {
   elements.badge.textContent = locationSourceLabel({
-    hasMap: Boolean(map),
+    mapProvider,
     tracking: locationWatchId !== null,
     hasFix: usingLiveLocation
   });
+}
+
+function leafletVehicleIcon(kind, label, heading) {
+  return window.L.divIcon({
+    className: "leaflet-vehicle-icon",
+    html: `<div class="leaflet-vehicle ${kind}-map-marker" style="--marker-heading:${heading}deg">${label}</div>`,
+    iconSize: [42, 42],
+    iconAnchor: [21, 21]
+  });
+}
+
+function updateMapVehicle(marker, position, kind, label) {
+  updateMarkerPosition(marker, position);
+  if (mapProvider === "openstreetmap" && typeof marker?.setIcon === "function") {
+    marker.setIcon(leafletVehicleIcon(kind, label, position.heading ?? 0));
+  }
 }
 
 async function playAlertTone() {
@@ -142,9 +159,9 @@ function runScenario(name) {
   elements.driver.style.setProperty("--driver-heading", `${driver.heading}deg`);
   elements.emergency.style.setProperty("--emergency-heading", `${emergency.heading}deg`);
   elements.mapsLink.href = googleMapsUrl(driver);
-  updateMarkerPosition(driverMarker, driver);
-  if (map && usingLiveLocation) map.setCenter(driver);
-  updateMarkerPosition(emergencyMarker, { lat: emergency.lat, lng: emergency.lng });
+  updateMapVehicle(driverMarker, driver, "driver", "自");
+  if (map && usingLiveLocation) centerMap(map, driver);
+  updateMapVehicle(emergencyMarker, emergency, "emergency", "救");
 }
 
 document.querySelectorAll("[data-scenario]").forEach((button) => {
@@ -169,8 +186,8 @@ function handleLocationUpdate(position) {
   }
   currentDriver = driver;
   usingLiveLocation = true;
-  updateMarkerPosition(driverMarker, currentDriver);
-  if (map) map.setCenter(currentDriver);
+  updateMapVehicle(driverMarker, currentDriver, "driver", "自");
+  if (map) centerMap(map, currentDriver);
   elements.driver.style.setProperty("--driver-heading", `${currentDriver.heading}deg`);
   elements.mapsLink.href = googleMapsUrl(currentDriver);
   updateConnectionBadge();
@@ -211,25 +228,51 @@ elements.drivingMode.addEventListener("change", () => {
   elements.controls.classList.toggle("driving", elements.drivingMode.checked);
 });
 
-async function loadGoogleMap() {
+function loadOpenStreetMap() {
+  if (!window.L) return false;
+  const container = document.querySelector("#map");
+  container.innerHTML = "";
+  map = window.L.map(container).setView([currentDriver.lat, currentDriver.lng], 16);
+  window.L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  }).addTo(map);
+  driverMarker = window.L.marker([currentDriver.lat, currentDriver.lng], {
+    icon: leafletVehicleIcon("driver", "自", currentDriver.heading)
+  }).addTo(map);
+  emergencyMarker = window.L.marker([currentEmergency.lat, currentEmergency.lng], {
+    icon: leafletVehicleIcon("emergency", "救", currentEmergency.heading)
+  }).addTo(map);
+  mapProvider = "openstreetmap";
+  updateConnectionBadge();
+  return true;
+}
+
+async function loadMap() {
   const key = window.APP_CONFIG?.googleMapsApiKey;
-  if (!key || key.includes("YOUR_")) {
-    updateConnectionBadge();
-    return;
+  if (key && !key.includes("YOUR_")) {
+    try {
+      await loadGoogleMapsApi(key);
+      document.querySelector("#map").innerHTML = "";
+      map = new google.maps.Map(document.querySelector("#map"), { center: currentDriver, zoom: 16, disableDefaultUI: true });
+      driverMarker = new google.maps.Marker({ map, position: currentDriver, title: "現在地" });
+      emergencyMarker = new google.maps.Marker({ map, position: currentEmergency, title: "緊急車両（模擬）" });
+      mapProvider = "google";
+      updateConnectionBadge();
+      return;
+    } catch (error) {
+      console.warn("Google Mapsを読み込めないため、OpenStreetMapを使用します。", error);
+    }
   }
   try {
-    await loadGoogleMapsApi(key);
-    document.querySelector("#map").innerHTML = "";
-    map = new google.maps.Map(document.querySelector("#map"), { center: currentDriver, zoom: 16, disableDefaultUI: true });
-    driverMarker = new google.maps.Marker({ map, position: currentDriver, title: "現在地" });
-    emergencyMarker = new google.maps.Marker({ map, position: currentEmergency, title: "緊急車両（模擬）" });
-    updateConnectionBadge();
+    if (loadOpenStreetMap()) return;
   } catch (error) {
-    console.warn("Google Mapsを読み込めないため、安全な簡易地図を使用します。", error);
-    updateConnectionBadge();
+    console.warn("OpenStreetMapを読み込めないため、簡易地図を使用します。", error);
   }
+  mapProvider = "fallback";
+  updateConnectionBadge();
 }
 
 runScenario("away");
-loadGoogleMap();
+loadMap();
 if ("serviceWorker" in navigator && location.protocol !== "file:") navigator.serviceWorker.register("./sw.js");

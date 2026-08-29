@@ -12,7 +12,16 @@ export function googleMapsUrl(position) {
 export function updateMarkerPosition(marker, position) {
   if (!marker) return false;
   if (typeof marker.setPosition === "function") marker.setPosition(position);
+  else if (typeof marker.setLatLng === "function") marker.setLatLng([position.lat, position.lng]);
   else marker.position = position;
+  return true;
+}
+
+export function centerMap(map, position) {
+  if (!map || !position) return false;
+  if (typeof map.setCenter === "function") map.setCenter(position);
+  else if (typeof map.panTo === "function") map.panTo([position.lat, position.lng]);
+  else return false;
   return true;
 }
 

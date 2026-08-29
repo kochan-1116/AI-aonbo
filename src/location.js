@@ -22,8 +22,12 @@ export function driverFromGeolocation(position, fallbackHeading = 0) {
   };
 }
 
-export function locationSourceLabel({ hasMap = false, tracking = false, hasFix = false } = {}) {
-  const mapSource = hasMap ? "Google Maps" : "簡易地図";
+export function locationSourceLabel({ mapProvider = "fallback", tracking = false, hasFix = false } = {}) {
+  const mapSource = {
+    google: "Google Maps",
+    openstreetmap: "OpenStreetMap",
+    fallback: "簡易地図"
+  }[mapProvider] ?? "簡易地図";
   const locationSource = tracking ? "GPS追従中" : hasFix ? "GPS最終位置" : "模擬データ";
   return `${mapSource} / ${locationSource}`;
 }

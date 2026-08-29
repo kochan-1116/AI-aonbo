@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  centerMap,
   googleMapsUrl,
   googleMapsScriptUrl,
   loadGoogleMapsApi,
@@ -35,6 +36,23 @@ test("新型マーカーはpositionプロパティで更新する", () => {
   assert.equal(updateMarkerPosition(marker, { lat: 35, lng: 139 }), true);
   assert.deepEqual(marker.position, { lat: 35, lng: 139 });
   assert.equal(updateMarkerPosition(null, { lat: 0, lng: 0 }), false);
+});
+
+test("Leafletマーカーは緯度経度配列で更新する", () => {
+  let received;
+  const marker = { setLatLng: (position) => { received = position; } };
+  assert.equal(updateMarkerPosition(marker, { lat: 35, lng: 139 }), true);
+  assert.deepEqual(received, [35, 139]);
+});
+
+test("Google MapsとLeafletの中心位置をそれぞれ更新する", () => {
+  let googlePosition;
+  let leafletPosition;
+  assert.equal(centerMap({ setCenter: (position) => { googlePosition = position; } }, { lat: 35, lng: 139 }), true);
+  assert.equal(centerMap({ panTo: (position) => { leafletPosition = position; } }, { lat: 35, lng: 139 }), true);
+  assert.deepEqual(googlePosition, { lat: 35, lng: 139 });
+  assert.deepEqual(leafletPosition, [35, 139]);
+  assert.equal(centerMap(null, { lat: 35, lng: 139 }), false);
 });
 
 test("Google Mapsが読込済みならスクリプトを重複追加しない", async () => {

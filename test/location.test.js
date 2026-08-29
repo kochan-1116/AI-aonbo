@@ -33,7 +33,8 @@ test("GPS状態バッジは追従・停止・地図種別を正しく表示す�
   assert.equal(locationSourceLabel(), "簡易地図 / 模擬データ");
   assert.equal(locationSourceLabel({ tracking: true }), "簡易地図 / GPS追従中");
   assert.equal(locationSourceLabel({ hasFix: true }), "簡易地図 / GPS最終位置");
-  assert.equal(locationSourceLabel({ hasMap: true, tracking: true, hasFix: true }), "Google Maps / GPS追従中");
+  assert.equal(locationSourceLabel({ mapProvider: "google", tracking: true, hasFix: true }), "Google Maps / GPS追従中");
+  assert.equal(locationSourceLabel({ mapProvider: "openstreetmap", tracking: true }), "OpenStreetMap / GPS追従中");
 });
 
 test("GPS追従は高精度・短いキャッシュ・有限タイムアウトを使う", () => {

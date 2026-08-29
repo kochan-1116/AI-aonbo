@@ -8,6 +8,7 @@
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="icon" type="image/png" sizes="1254x1254" href="assets/app-icon.png" />
     <link rel="apple-touch-icon" href="assets/app-icon.png" />
+    <link rel="stylesheet" href="vendor/leaflet/leaflet.css" />
     <link rel="stylesheet" href="styles.css" />
     <title>緊急車両セーフティナビ</title>
   </head>
@@ -34,7 +35,7 @@
       </section>
 
       <section class="map-card" aria-label="現在地周辺の地図">
-        <div id="map" class="map" role="img" aria-label="自車と緊急車両の位置関係。矢印は各車両の進行方向">
+        <div id="map" class="map" role="region" aria-label="自車と緊急車両の位置関係。矢印は各車両の進行方向">
           <div class="fallback-map">
             <div class="road road-horizontal"></div>
             <div class="road road-vertical"></div>
@@ -116,6 +117,7 @@
 
     <footer>このアプリは安全確認を補助する試作品です。警告の有無にかかわらず、交通法規・サイレン・目視確認を優先してください。</footer>
     <script src="config.js" onerror="this.remove()"></script>
+    <script src="vendor/leaflet/leaflet.js"></script>
     <script type="module" src="src/app.js"></script>
   </body>
 </html>

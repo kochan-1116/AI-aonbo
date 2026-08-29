@@ -198,16 +198,12 @@ function handleLocationUpdate(position) {
   elements.locationStatus.textContent = `GPS追従中（精度 約${Math.round(currentDriver.accuracy)}m / 進行方向 ${Math.round(currentDriver.heading)}°）`;
 }
 
-elements.getLocation.addEventListener("click", () => {
+function startLocationWatch() {
   if (!("geolocation" in navigator)) {
     elements.locationStatus.textContent = "この端末ではGPSを利用できません";
-    return;
+    return false;
   }
-  if (locationWatchId !== null) {
-    stopLocationWatch();
-    elements.locationStatus.textContent = "GPS追従を停止しました";
-    return;
-  }
+  if (locationWatchId !== null) return true;
   elements.getLocation.disabled = true;
   elements.getLocation.textContent = "GPS追従を停止";
   elements.getLocation.classList.remove("secondary");
@@ -225,8 +221,20 @@ elements.getLocation.addEventListener("click", () => {
     console.warn("GPS追従を開始できませんでした。", error);
     elements.locationStatus.textContent = "GPS追従を開始できませんでした。HTTPSと端末設定を確認してください";
     stopLocationWatch();
+    elements.getLocation.disabled = false;
+    return false;
   }
   elements.getLocation.disabled = false;
+  return true;
+}
+
+elements.getLocation.addEventListener("click", () => {
+  if (locationWatchId !== null) {
+    stopLocationWatch();
+    elements.locationStatus.textContent = "GPS追従を停止しました";
+    return;
+  }
+  startLocationWatch();
 });
 elements.drivingMode.addEventListener("change", () => {
   elements.controls.classList.toggle("driving", elements.drivingMode.checked);
@@ -279,4 +287,5 @@ async function loadMap() {
 
 runScenario("away");
 loadMap();
+startLocationWatch();
 if ("serviceWorker" in navigator && location.protocol !== "file:") navigator.serviceWorker.register("./sw.js");

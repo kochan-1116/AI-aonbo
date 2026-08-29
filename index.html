@@ -84,6 +84,10 @@
           <input id="drivingMode" type="checkbox" />
           <span class="switch" aria-hidden="true"></span>
         </label>
+        <div class="location-row">
+          <button id="getLocation" class="secondary">現在地を取得</button>
+          <span id="locationStatus" class="location-status" role="status">GPSはまだ取得していません</span>
+        </div>
         <div id="demoControls" class="button-row">
           <button data-scenario="approach">接近を再現</button>
           <button data-scenario="rear">後方から接近</button>

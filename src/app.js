@@ -23,6 +23,8 @@ const elements = {
   emergency: document.querySelector("#fallbackEmergency"),
   driver: document.querySelector("#fallbackDriver"),
   mapsLink: document.querySelector("#openGoogleMaps"),
+  getLocation: document.querySelector("#getLocation"),
+  locationStatus: document.querySelector("#locationStatus"),
   drivingMode: document.querySelector("#drivingMode"),
   controls: document.querySelector(".controls"),
   soundStatus: document.querySelector("#soundStatus"),
@@ -34,6 +36,8 @@ let map;
 let driverMarker;
 let emergencyMarker;
 let audioContext;
+let currentDriver = { ...TOKYO_STATION };
+let usingLiveLocation = false;
 
 async function playAlertTone() {
   const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -103,11 +107,15 @@ function renderResult(result) {
 function runScenario(name) {
   const scenario = scenarios[name];
   const timestamp = Date.now();
+  const driver = { ...currentDriver, timestamp };
+  const latitudeOffset = scenario.lat - TOKYO_STATION.lat;
+  const longitudeOffset = scenario.lng - TOKYO_STATION.lng;
   const emergency = {
     ...scenario,
+    lat: driver.lat + latitudeOffset,
+    lng: driver.lng + longitudeOffset,
     timestamp: timestamp - (scenario.stale ? 20_000 : 0)
   };
-  const driver = { ...TOKYO_STATION, timestamp };
   renderResult(evaluateEmergencyApproach({ driver, emergency, now: timestamp }));
   const positions = {
     approach: [58, 31], rear: [58, 72], critical: [58, 42], away: [58, 38],
@@ -119,6 +127,8 @@ function runScenario(name) {
   elements.driver.style.setProperty("--driver-heading", `${driver.heading}deg`);
   elements.emergency.style.setProperty("--emergency-heading", `${emergency.heading}deg`);
   elements.mapsLink.href = googleMapsUrl(driver);
+  updateMarkerPosition(driverMarker, driver);
+  if (map && usingLiveLocation) map.setCenter(driver);
   updateMarkerPosition(emergencyMarker, { lat: emergency.lat, lng: emergency.lng });
 }
 
@@ -127,6 +137,35 @@ document.querySelectorAll("[data-scenario]").forEach((button) => {
 });
 document.querySelector("#testSound").addEventListener("click", () => {
   announceOnce("警告音のテストです。緊急車両の接近時はこのようにお知らせします。", "manual-test", { force: true });
+});
+elements.getLocation.addEventListener("click", () => {
+  if (!("geolocation" in navigator)) {
+    elements.locationStatus.textContent = "この端末ではGPSを利用できません";
+    return;
+  }
+  elements.getLocation.disabled = true;
+  elements.locationStatus.textContent = "現在地を取得しています…";
+  navigator.geolocation.getCurrentPosition(({ coords, timestamp }) => {
+    currentDriver = {
+      lat: coords.latitude,
+      lng: coords.longitude,
+      heading: Number.isFinite(coords.heading) ? coords.heading : 0,
+      speedMps: Number.isFinite(coords.speed) && coords.speed >= 0 ? coords.speed : 0,
+      accuracy: coords.accuracy,
+      timestamp
+    };
+    usingLiveLocation = true;
+    updateMarkerPosition(driverMarker, currentDriver);
+    if (map) map.setCenter(currentDriver);
+    elements.mapsLink.href = googleMapsUrl(currentDriver);
+    elements.badge.textContent = map ? "Google Maps / GPS" : "簡易地図 / GPS";
+    elements.locationStatus.textContent = `現在地を取得しました（精度 約${Math.round(currentDriver.accuracy)}m）`;
+    elements.getLocation.disabled = false;
+  }, (error) => {
+    const reason = error.code === 1 ? "位置情報の利用が許可されていません" : "現在地を取得できませんでした";
+    elements.locationStatus.textContent = `${reason}。端末の設定を確認してください`;
+    elements.getLocation.disabled = false;
+  }, { enableHighAccuracy: true, maximumAge: 5_000, timeout: 10_000 });
 });
 elements.drivingMode.addEventListener("change", () => {
   elements.controls.classList.toggle("driving", elements.drivingMode.checked);
@@ -138,8 +177,8 @@ async function loadGoogleMap() {
   try {
     await loadGoogleMapsApi(key);
     document.querySelector("#map").innerHTML = "";
-    map = new google.maps.Map(document.querySelector("#map"), { center: TOKYO_STATION, zoom: 16, disableDefaultUI: true });
-    driverMarker = new google.maps.Marker({ map, position: TOKYO_STATION, title: "現在地" });
+    map = new google.maps.Map(document.querySelector("#map"), { center: currentDriver, zoom: 16, disableDefaultUI: true });
+    driverMarker = new google.maps.Marker({ map, position: currentDriver, title: "現在地" });
     emergencyMarker = new google.maps.Marker({ map, position: scenarios.approach, title: "緊急車両（模擬）" });
     elements.badge.textContent = "Google Maps / 模擬データ";
   } catch (error) {

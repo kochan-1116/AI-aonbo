@@ -65,12 +65,14 @@ main { display: grid; gap: 16px; }
 .switch::after { content: ""; position: absolute; width: 20px; height: 20px; background: white; border-radius: 50%; top: 4px; left: 4px; transition: transform .2s; }
 .switch-row input:checked + .switch { background: var(--blue); }
 .switch-row input:checked + .switch::after { transform: translateX(20px); }
+.location-row { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.location-status { color: var(--muted); font-size: .78rem; }
 .button-row { grid-column: 1 / -1; display: flex; gap: 10px; flex-wrap: wrap; }
 .sound-status { grid-column: 1 / -1; margin: -2px 0 0; color: var(--muted); font-size: .78rem; }
 button { appearance: none; border: 0; border-radius: 11px; padding: 11px 16px; font: inherit; font-weight: 750; color: #03101b; background: var(--blue); cursor: pointer; }
 button.secondary { background: #263b52; color: var(--text); }
 button:focus-visible, input:focus-visible { outline: 3px solid white; outline-offset: 3px; }
-.controls.driving .button-row, .controls.driving .sound-status { display: none; }
+.controls.driving .location-row, .controls.driving .button-row, .controls.driving .sound-status { display: none; }
 .hazards { display: grid; gap: 13px; }
 .hazard-item { display: flex; align-items: center; gap: 12px; background: #13253a; padding: 13px; border-radius: 12px; }
 .hazard-item div { display: flex; flex-direction: column; gap: 3px; }

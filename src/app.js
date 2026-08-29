@@ -1,10 +1,13 @@
 import { evaluateEmergencyApproach } from "./safety.js";
 
-const TOKYO_STATION = { lat: 35.681236, lng: 139.767125, heading: 0, accuracy: 12 };
+const TOKYO_STATION = { lat: 35.681236, lng: 139.767125, heading: 0, speedMps: 12, accuracy: 12 };
 const scenarios = {
-  approach: { lat: 35.6840, lng: 139.767125, heading: 180, accuracy: 10 },
-  away: { lat: 35.6832, lng: 139.767125, heading: 0, accuracy: 10 },
-  stale: { lat: 35.6830, lng: 139.767125, heading: 180, accuracy: 10, stale: true }
+  approach: { lat: 35.6840, lng: 139.767125, heading: 180, speedMps: 15, accuracy: 10 },
+  critical: { lat: 35.6820, lng: 139.767125, heading: 180, speedMps: 12, accuracy: 10 },
+  away: { lat: 35.6832, lng: 139.767125, heading: 0, speedMps: 15, accuracy: 10 },
+  outside: { lat: 35.6870, lng: 139.767125, heading: 180, speedMps: 15, accuracy: 10 },
+  inaccurate: { lat: 35.6830, lng: 139.767125, heading: 180, speedMps: 15, accuracy: 140 },
+  stale: { lat: 35.6830, lng: 139.767125, heading: 180, speedMps: 15, accuracy: 10, stale: true }
 };
 
 const elements = {
@@ -26,11 +29,11 @@ let map;
 let driverMarker;
 let emergencyMarker;
 
-function announceOnce(message) {
-  if (!elements.drivingMode.checked || message === lastAnnouncement || !("speechSynthesis" in window)) return;
+function announceOnce(message, key) {
+  if (!elements.drivingMode.checked || key === lastAnnouncement || !("speechSynthesis" in window)) return;
   window.speechSynthesis.cancel();
   window.speechSynthesis.speak(new SpeechSynthesisUtterance(message));
-  lastAnnouncement = message;
+  lastAnnouncement = key;
 }
 
 function renderResult(result) {
@@ -44,7 +47,9 @@ function renderResult(result) {
   [elements.icon.textContent, elements.kicker.textContent, elements.title.textContent, elements.detail.textContent] = view;
   elements.distance.textContent = Number.isFinite(result.distance) ? `約 ${Math.round(result.distance)} m` : "位置不明";
   elements.freshness.textContent = result.level === "unavailable" ? "通信または精度を確認" : "8秒以内の位置情報";
-  if (result.level === "warning" || result.level === "critical") announceOnce(`${result.reason}。周囲を確認してください。`);
+  if (result.level === "warning" || result.level === "critical") {
+    announceOnce(`${result.reason}。周囲を確認してください。`, `${result.level}:${result.direction}`);
+  }
   else lastAnnouncement = "";
 }
 
@@ -55,7 +60,10 @@ function runScenario(name) {
     timestamp: Date.now() - (scenario.stale ? 20_000 : 0)
   };
   renderResult(evaluateEmergencyApproach({ driver: TOKYO_STATION, emergency }));
-  const positions = { approach: [63, 31], away: [69, 38], stale: [72, 35] };
+  const positions = {
+    approach: [63, 31], critical: [57, 42], away: [69, 38],
+    outside: [78, 18], inaccurate: [70, 34], stale: [72, 35]
+  };
   const [left, top] = positions[name];
   elements.emergency.style.left = `${left}%`;
   elements.emergency.style.top = `${top}%`;

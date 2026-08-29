@@ -1,4 +1,4 @@
-const CACHE_NAME = "safety-nav-v1";
+const CACHE_NAME = "safety-nav-v2";
 const APP_SHELL = ["./", "./index.html", "./styles.css", "./src/app.js", "./src/safety.js", "./manifest.webmanifest"];
 self.addEventListener("install", (event) => event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL))));
 self.addEventListener("activate", (event) => event.waitUntil(

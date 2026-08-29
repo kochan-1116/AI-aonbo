@@ -1,4 +1,4 @@
-const CACHE_NAME = "safety-nav-v19";
+const CACHE_NAME = "safety-nav-v20";
 const APP_SHELL = [
   "./", "./index.html", "./styles.css", "./src/app.js", "./src/safety.js",
   "./src/map-adapter.js", "./src/location.js", "./manifest.webmanifest", "./assets/app-icon.png",

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { driverFromGeolocation, GEOLOCATION_OPTIONS, locationSourceLabel } from "../src/location.js";
+import { driverFromGeolocation, GEOLOCATION_OPTIONS, headingFromMovement, locationSourceLabel } from "../src/location.js";
 
 test("GPS位置を安全判定用の形式へ変換する", () => {
   const driver = driverFromGeolocation({
@@ -19,6 +19,35 @@ test("停止中など方位と速度が取れない場合は直前の方位と�
   }, 270);
   assert.equal(driver.heading, 270);
   assert.equal(driver.speedMps, 0);
+});
+
+test("GPSが返す負の方位を0〜360度へ正規化する", () => {
+  const driver = driverFromGeolocation({
+    coords: { latitude: 35, longitude: 139, accuracy: 5, heading: -90, speed: 3 },
+    timestamp: 123
+  });
+  assert.equal(driver.heading, 270);
+});
+
+test("連続するGPS座標から東向きと南向きの進行方向を計算する", () => {
+  const base = { lat: 35, lng: 139, accuracy: 10, timestamp: 1_000 };
+  const east = headingFromMovement(base, { ...base, lng: 139.0001, timestamp: 2_000 }, 0);
+  const south = headingFromMovement(base, { ...base, lat: 34.9999, timestamp: 2_000 }, 0);
+  assert.ok(east > 89 && east < 91);
+  assert.ok(south > 179 && south < 181);
+});
+
+test("GPSの微小な位置ぶれでは進行方向を変更しない", () => {
+  const previous = { lat: 35, lng: 139, accuracy: 10, timestamp: 1_000 };
+  const jitter = { lat: 35.00001, lng: 139.00001, accuracy: 10, timestamp: 2_000 };
+  assert.equal(headingFromMovement(previous, jitter, 225), 225);
+});
+
+test("古すぎるGPS更新や時刻が逆転した更新では進行方向を推測しない", () => {
+  const previous = { lat: 35, lng: 139, accuracy: 5, timestamp: 10_000 };
+  const moved = { lat: 35.001, lng: 139, accuracy: 5, timestamp: 50_001 };
+  assert.equal(headingFromMovement(previous, moved, 45), 45);
+  assert.equal(headingFromMovement(previous, { ...moved, timestamp: 9_000 }, 45), 45);
 });
 
 test("不正なGPS座標・精度・時刻は採用しない", () => {

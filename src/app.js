@@ -1,6 +1,6 @@
 import { evaluateEmergencyApproach } from "./safety.js";
 import { centerMap, googleMapsUrl, loadGoogleMapsApi, updateMarkerPosition } from "./map-adapter.js";
-import { driverFromGeolocation, GEOLOCATION_OPTIONS, locationSourceLabel } from "./location.js";
+import { driverFromGeolocation, GEOLOCATION_OPTIONS, headingFromMovement, locationSourceLabel } from "./location.js";
 
 const TOKYO_STATION = { lat: 35.681236, lng: 139.767125, heading: 0, speedMps: 12, accuracy: 12 };
 const scenarios = {
@@ -179,10 +179,14 @@ function stopLocationWatch() {
 }
 
 function handleLocationUpdate(position) {
+  const previousDriver = usingLiveLocation ? currentDriver : null;
   const driver = driverFromGeolocation(position, currentDriver.heading);
   if (!driver) {
     elements.locationStatus.textContent = "GPSから不正な位置情報を受信しました";
     return;
+  }
+  if (!Number.isFinite(position?.coords?.heading) && previousDriver) {
+    driver.heading = headingFromMovement(previousDriver, driver, previousDriver.heading);
   }
   currentDriver = driver;
   usingLiveLocation = true;
@@ -191,7 +195,7 @@ function handleLocationUpdate(position) {
   elements.driver.style.setProperty("--driver-heading", `${currentDriver.heading}deg`);
   elements.mapsLink.href = googleMapsUrl(currentDriver);
   updateConnectionBadge();
-  elements.locationStatus.textContent = `GPS追従中（精度 約${Math.round(currentDriver.accuracy)}m）`;
+  elements.locationStatus.textContent = `GPS追従中（精度 約${Math.round(currentDriver.accuracy)}m / 進行方向 ${Math.round(currentDriver.heading)}°）`;
 }
 
 elements.getLocation.addEventListener("click", () => {

@@ -1,3 +1,5 @@
+import { bearingDegrees, distanceMeters } from "./safety.js";
+
 export const GEOLOCATION_OPTIONS = Object.freeze({
   enableHighAccuracy: true,
   maximumAge: 5_000,
@@ -15,11 +17,27 @@ export function driverFromGeolocation(position, fallbackHeading = 0) {
   return {
     lat: coords.latitude,
     lng: coords.longitude,
-    heading: Number.isFinite(coords.heading) ? coords.heading : fallbackHeading,
+    heading: Number.isFinite(coords.heading) ? ((coords.heading % 360) + 360) % 360 : fallbackHeading,
     speedMps: Number.isFinite(coords.speed) && coords.speed >= 0 ? coords.speed : 0,
     accuracy: coords.accuracy,
     timestamp
   };
+}
+
+export function headingFromMovement(previous, current, fallbackHeading = 0) {
+  if (!previous || !current
+    || !Number.isFinite(previous.lat) || !Number.isFinite(previous.lng)
+    || !Number.isFinite(current.lat) || !Number.isFinite(current.lng)
+    || !Number.isFinite(previous.timestamp) || !Number.isFinite(current.timestamp)
+    || current.timestamp <= previous.timestamp
+    || current.timestamp - previous.timestamp > 30_000) return fallbackHeading;
+
+  const accuracyThreshold = Math.max(
+    3,
+    Math.min(15, Math.max(previous.accuracy ?? 0, current.accuracy ?? 0) * 0.5)
+  );
+  if (distanceMeters(previous, current) < accuracyThreshold) return fallbackHeading;
+  return bearingDegrees(previous, current);
 }
 
 export function locationSourceLabel({ mapProvider = "fallback", tracking = false, hasFix = false } = {}) {
